@@ -5,6 +5,32 @@ __version__ = '0.0.1'
 
 
 def get_ref(*args):
+    """
+    Extracts resource type and id from args
+
+    :return: tuple of (resource_type, resource_id)
+
+    >>> get_ref('Patient', 'p1')
+    ('Patient', 'p1')
+
+    >>> get_ref({'resourceType': 'Patient', 'id': 'p1'})
+    ('Patient', 'p1')
+
+    >>> get_ref()
+    Traceback (most recent call last):
+    ...
+    TypeError: Resource type and id are required
+
+    >>> get_ref('Patient')
+    Traceback (most recent call last):
+    ...
+    TypeError: Resource type and id are required
+
+    >>> get_ref({'resourceType': 'Patient'})
+    Traceback (most recent call last):
+    ...
+    TypeError: First argument must contain `resourceType` and `id` keys
+    """
     if len(args) == 1 and isinstance(args[0], dict):
         resource = args[0]
 
@@ -18,12 +44,15 @@ def get_ref(*args):
         resource_type = args[0]
         resource_id = args[1]
     else:
-        raise TypeError('Resource type and id is required')
+        raise TypeError('Resource type and id are required')
 
     return resource_type, resource_id
 
 
 class FHIRBase(object):
+    """
+    Wrapper for fhirbase connection. Provides CRUD operations on resources.
+    """
     def __init__(self, connection):
         self.connection = connection
 
