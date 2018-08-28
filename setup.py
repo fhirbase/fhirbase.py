@@ -25,7 +25,7 @@ with open('README.md') as f:
 setup(
     name='fhirbase',
     version=version,
-    url='http://github.com/HealthSamurai/fhirbase.py',
+    url='http://github.com/fhirbase/fhirbase.py',
     license='',
     description='fhirbase connector',
     long_description=long_description,
