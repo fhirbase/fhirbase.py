@@ -4,4 +4,4 @@
 
 # fhirbase.py
 FHIRBase connector for python.
-This package provides CRUD over fhirbase.
+This package provides CRUD on resourses in fhirbase.
