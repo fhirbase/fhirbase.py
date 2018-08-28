@@ -23,7 +23,7 @@ def get_ref(*args):
     return resource_type, resource_id
 
 
-class FHIRBaseConnection(object):
+class FHIRBase(object):
     def __init__(self, connection):
         self.connection = connection
 
@@ -83,3 +83,6 @@ class FHIRBaseConnection(object):
         resource_type, resource_id = get_ref(*args)
 
         return self._execute_fn('delete', [resource_type, resource_id], txid)
+
+
+__all__ = ['FHIRBase']
