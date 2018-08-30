@@ -12,7 +12,7 @@ def db():
     pgpassword = os.getenv('PGPASSWORD', 'postgres')
     pghost = os.getenv('PGHOST', 'localhost')
     pgport = os.getenv('PGPORT', '5432')
-    dbname = os.getenv('PGDATABASE', 'fhirbase')
+    dbname = os.getenv('PGDATABASE', 'postgres')
 
     return psycopg2.connect(dbname=dbname, user=pguser,
                             password=pgpassword, host=pghost, port=pgport)

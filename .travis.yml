@@ -17,7 +17,7 @@ env:
   global:
     - PGPORT=5432
     - PGHOST=localhost
-    - PGDATABASE=fhirbase
+    - PGDATABASE=postgres
     - PGUSER=postgres
 
 install:
@@ -36,15 +36,7 @@ before_script:
   - sudo cp /etc/postgresql/{9.6,10}/main/pg_hba.conf
   - sudo service postgresql restart
   # Prepare db
-  - psql -c 'create database fhirbase;' -d postgres -U postgres
   - bin/fhirbase init 3.0.1
-  - psql -c '\dt'
-  - psql -c '\dt' -d fhirbase
-  - psql -c '\dt' -d postgres
-  - psql -c '\df'
-  - psql -c '\df' -d fhirbase
-  - psql -c '\df' -d postgres
-
 
 script:
   - tox
