@@ -1,0 +1,23 @@
+version: '3'
+
+networks:
+  fhirbase: {}
+
+services:
+  db:
+    build: ./fhirbase-image
+    networks:
+    - fhirbase
+
+  fhirbase:
+    build: .
+    depends_on:
+    - db
+    networks:
+    - fhirbase
+    environment:
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGPORT: 5432
+      PGHOST: db
+      PGDATABASE: postgres

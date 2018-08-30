@@ -1,48 +1,13 @@
-language: python
-
-python:
-  - "3.6"
+sudo: required
 
 services:
-  - postgresql
-
-addons:
-  postgresql: "10"
-  apt:
-    packages:
-      - postgresql-10
-      - postgresql-client-10
-
-env:
-  global:
-    - PGPORT=5432
-    - PGHOST=localhost
-    - PGDATABASE=postgres
-    - PGUSER=postgres
-
-install:
-  # Install fhirbase
-  - mkdir bin
-  - export PATH=$PATH:$PWD/bin
-  - curl -L https://github.com/fhirbase/fhirbase-core/releases/download/nightly-build/fhirbase-linix-amd64 > bin/fhirbase
-  - chmod +x bin/fhirbase
-  # Install requirements
-  - pip install tox tox-travis
-
-before_script:
-  # Set up postgres 10 according to https://github.com/travis-ci/travis-ci/issues/8537#issuecomment-416467506
-  - sudo sed -i 's/port = 5433/port = 5432/' /etc/postgresql/10/main/postgresql.conf
-  - sudo cp /etc/postgresql/{9.6,10}/main/pg_hba.conf
-  - sudo service postgresql restart
-  # Prepare db
-  - bin/fhirbase init 3.0.1
+  - docker
 
 script:
-  - tox
+- ./run_tests.sh
 
-after_success:
-  - pip install codecov
-  - codecov -e TOXENV
+after_script:
+- docker-compose down
 
 notifications:
   email: false
