@@ -1,0 +1,24 @@
+version: '2'
+services:
+  db:
+    build: ./fhirbase
+    environment:
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGPORT: 5432
+      PGHOST: db
+      PGDATABASE: postgres
+
+  example:
+    build: .
+    volumes:
+    - .:/app/user
+    - ../fhirbase:/app/user/fhirbase
+    depends_on:
+    - db
+    environment:
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGPORT: 5432
+      PGHOST: db
+      PGDATABASE: postgres
