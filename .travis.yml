@@ -30,9 +30,8 @@ install:
   - pip install tox tox-travis
 
 before_script:
-  # Use default port
+  # Set up postgres 10 according to https://github.com/travis-ci/travis-ci/issues/8537#issuecomment-416467506
   - sudo sed -i 's/port = 5433/port = 5432/' /etc/postgresql/10/main/postgresql.conf
-  # Use 9.6 auth config:
   - sudo cp /etc/postgresql/{9.6,10}/main/pg_hba.conf
   - sudo service postgresql restart
   # Prepare db
