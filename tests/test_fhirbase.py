@@ -28,3 +28,33 @@ def test_create(db):
     patient = fb.create({'resourceType': 'Patient'})
     if patient.get('id', None) is None:
         pytest.fail('Just created patient should have id')
+
+
+def test_update(db):
+    fb = fhirbase.FHIRBase(db)
+    patient = fb.create({'resourceType': 'Patient'})
+
+    patient['name'] = [{'text': 'John'}]
+    updated_patient = fb.update(patient)
+
+    if patient['id'] != updated_patient['id']:
+        pytest.fail('Patient after updating must have the same id')
+
+
+def test_read(db):
+    fb = fhirbase.FHIRBase(db)
+    patient = fb.create({'resourceType': 'Patient'})
+
+    fetched_patient = fb.read(patient)
+    if patient != fetched_patient:
+        pytest.fail('Fetched patient must be equal a created patient')
+
+
+def test_delete(db):
+    fb = fhirbase.FHIRBase(db)
+    patient = fb.create({'resourceType': 'Patient'})
+    fb.delete(patient)
+
+    fetched_patient = fb.read(patient)
+    if fetched_patient is not None:
+        pytest.fail('Deleting must remove patient from db')
