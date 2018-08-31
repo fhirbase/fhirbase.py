@@ -23,6 +23,17 @@ def test_connect_success(db):
     cur.close()
 
 
+def test_list_success(db):
+    fb = fhirbase.FHIRBase(db)
+    fb.create({'resourceType': 'Patient'})
+    fb.create({'resourceType': 'Patient'})
+    fetched_count = len(list(fb.list('SELECT * from patient')))
+    if fetched_count != 2:
+        pytest.fail(
+            'List should return 2 entries, '
+            'but {0} received'.format(fetched_count))
+
+
 def test_create_success(db):
     fb = fhirbase.FHIRBase(db)
     patient = fb.create({'resourceType': 'Patient'})
@@ -146,7 +157,7 @@ def test_multiple_operations_in_one_transaction_failed(db):
     fb = fhirbase.FHIRBase(db)
     txid = fb.start_transaction({'info': 'Create and update'})
     patient = fb.create({'resourceType': 'Patient'}, txid=txid)
-    updated_patient = fb.update(patient, txid=txid)
+    patient = fb.update(patient, txid=txid)
 
     with pytest.raises(psycopg2.DatabaseError):
         fb.delete(patient, txid=txid)
