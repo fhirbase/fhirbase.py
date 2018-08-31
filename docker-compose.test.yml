@@ -3,22 +3,22 @@ version: '3'
 services:
   wait_for:
     image: jwilder/dockerize
+    networks:
+    - fhirbase
+    depends_on:
+    - db
     command: |
       dockerize
        -wait tcp://db:5432
        -timeout 60s
-    networks:
-      - fhirbase
 
   tests:
     build: .
-    command: pytest --doctest-modules --cov-config=.coveragerc --cov fhirbase
-    volumes:
-      - ./shared:/app/user/shared
-    depends_on:
-    - db
+    command: pytest --doctest-modules --cov fhirbase
     networks:
     - fhirbase
+    depends_on:
+    - db
     environment:
       PGUSER: postgres
       PGPASSWORD: postgres
