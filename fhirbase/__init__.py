@@ -103,15 +103,27 @@ class FHIRBase(object):
 
         return self._execute_fn('update', [Json(resource)], txid)
 
+    def delete(self, *args, txid=None):
+        resource_type, resource_id = get_ref(*args)
+
+        return self._execute_fn('delete', [resource_type, resource_id], txid)
+
     def read(self, *args):
         resource_type, resource_id = get_ref(*args)
 
         return self._execute_fn('read', [resource_type, resource_id])
 
-    def delete(self, *args, txid=None):
-        resource_type, resource_id = get_ref(*args)
-
-        return self._execute_fn('delete', [resource_type, resource_id], txid)
+    def list(self, sql, *args):
+        cursor = self.connection.cursor()
+        try:
+            cursor.execute(
+                'SELECT _fhirbase_to_resource(_result.*) '
+                'FROM ({0}) _result'.format(sql),
+                *args)
+            for entry in cursor:
+                yield entry[0]
+        finally:
+            cursor.close()
 
 
 __all__ = ['FHIRBase']

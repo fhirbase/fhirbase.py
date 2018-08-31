@@ -26,6 +26,9 @@ if __name__ == '__main__':
         updated_patient = fb.update(patient)
         print('Updated patient: ', updated_patient)
 
+        for p in fb.list('select p.* from patient p'):
+            print('Patient = ', p)
+
         fetched_patient = fb.read(patient)
         print('Fetched patient:', fetched_patient)
 
