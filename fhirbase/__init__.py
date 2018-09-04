@@ -3,6 +3,7 @@ from contextlib import contextmanager
 from psycopg2 import DatabaseError
 from psycopg2.extras import Json
 
+
 __version__ = '0.0.1'
 
 
