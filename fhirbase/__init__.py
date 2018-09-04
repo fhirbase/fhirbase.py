@@ -1,3 +1,5 @@
+from contextlib import contextmanager
+
 from psycopg2 import DatabaseError
 from psycopg2.extras import Json
 
@@ -56,20 +58,6 @@ class FHIRBase(object):
     def __init__(self, connection):
         self.connection = connection
 
-    def _execute(self, sql, params):
-        cursor = self.connection.cursor()
-
-        try:
-            cursor.execute(sql, params)
-            self.connection.commit()
-
-            return cursor.fetchone()[0]
-        except DatabaseError:
-            self.connection.rollback()
-            raise
-        finally:
-            cursor.close()
-
     def _execute_fn(self, fn_name, params, txid=None):
         params = params.copy()
 
@@ -81,15 +69,44 @@ class FHIRBase(object):
             params=','.join(['%s'] * len(params))
         )
 
-        return self._execute(sql, params)
+        with self.execute(sql, params, commit=True) as cursor:
+            return cursor.fetchone()[0]
+
+    @contextmanager
+    def execute(self, sql, params=None, commit=False):
+        """
+        Executes query within cursor's context.
+        Returns context manager
+        """
+        with self.connection.cursor() as cursor:
+            try:
+                cursor.execute(sql, params)
+                if commit:
+                    self.connection.commit()
+                yield cursor
+            except DatabaseError:
+                if commit:
+                    self.connection.rollback()
+                raise
+
+    def execute_without_result(self, sql, params=None, commit=False):
+        """
+        Executes query and returns nothing
+        """
+        with self.execute(sql, params, commit):
+            pass
 
     def start_transaction(self, info=None):
+        """
+        Creates new logical transaction and returns id
+        """
         info = info or {}
 
-        return self._execute(
-            'INSERT INTO transaction (resource) VALUES (%s) RETURNING id',
-            [Json(info)]
-        )
+        with self.execute(
+                'INSERT INTO transaction (resource) VALUES (%s) RETURNING id',
+                [Json(info)]
+        ) as cursor:
+            return cursor.fetchone()[0]
 
     def create(self, resource, *, txid=None):
         resource_type = resource.get('resourceType', None)
@@ -114,16 +131,13 @@ class FHIRBase(object):
         return self._execute_fn('read', [resource_type, resource_id])
 
     def list(self, sql, *args):
-        cursor = self.connection.cursor()
-        try:
-            cursor.execute(
+        with self.execute(
                 'SELECT _fhirbase_to_resource(_result.*) '
                 'FROM ({0}) _result'.format(sql),
-                *args)
+                *args
+        ) as cursor:
             for entry in cursor:
                 yield entry[0]
-        finally:
-            cursor.close()
 
 
 __all__ = ['FHIRBase']
