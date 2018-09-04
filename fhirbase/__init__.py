@@ -1,8 +1,7 @@
 from contextlib import contextmanager
 
 from psycopg2 import DatabaseError
-from psycopg2.extras import Json
-
+from psycopg2.extras import Json, DictCursor
 
 __version__ = '0.0.1'
 
@@ -52,6 +51,39 @@ def get_ref(*args):
     return resource_type, resource_id
 
 
+def row_to_resource(row):
+    """
+    Transforms raw row from resource's table to resource representation
+
+    >>> import pprint
+    >>> pprint.pprint(row_to_resource({
+    ...     'resource': {'name': []},
+    ...     'ts': 'ts',
+    ...     'txid': 'txid',
+    ...     'resource_type': 'Patient',
+    ...     'meta': {'tag': 'created'},
+    ...     'id': 'id',
+    ... }))
+    {'id': 'id',
+     'meta': {'lastUpdated': 'ts', 'versionId': 'txid'},
+     'name': [],
+     'resourceType': 'Patient'}
+    """
+    resource = row['resource']
+    meta = row['resource'].get('meta', {})
+    meta.update({
+        'lastUpdated': row['ts'],
+        'versionId': row['txid'],
+    })
+    resource.update({
+        'resourceType': row['resource_type'],
+        'id': row['id'],
+        'meta': meta,
+    })
+
+    return resource
+
+
 class FHIRBase(object):
     """
     Wrapper for fhirbase connection. Provides CRUD operations on resources.
@@ -74,20 +106,21 @@ class FHIRBase(object):
             return cursor.fetchone()[0]
 
     @contextmanager
-    def execute(self, sql, params=None, commit=False):
+    def execute(self, sql, params=None, commit=False, *, cursor_factory=None):
         """
         Executes query within cursor's context.
         Returns context manager
         """
-        with self.connection.cursor() as cursor:
+        cursor_factory = cursor_factory or DictCursor
+
+        with self.connection.cursor(cursor_factory=cursor_factory) as cursor:
             try:
                 cursor.execute(sql, params)
                 if commit:
                     self.connection.commit()
                 yield cursor
             except DatabaseError:
-                if commit:
-                    self.connection.rollback()
+                self.connection.rollback()
                 raise
 
     def execute_without_result(self, sql, params=None, commit=False):
@@ -110,6 +143,15 @@ class FHIRBase(object):
             return cursor.fetchone()[0]
 
     def create(self, resource, *, txid=None):
+        """
+        Creates resource and returns resource.
+        If `txid` is not specified, new logical transaction will be created
+
+        Example of usage:
+        ```
+        fb.create({'resourceType': 'Patient', 'name': []})
+        ```
+        """
         resource_type = resource.get('resourceType', None)
         if not resource_type:
             raise TypeError('`resource` must contain `resourceType` key')
@@ -117,21 +159,64 @@ class FHIRBase(object):
         return self._execute_fn('create', [Json(resource)], txid)
 
     def update(self, resource, *, txid=None):
+        """
+        Updates resource and returns resource.
+        If `txid` is not specified, new logical transaction will be created
+
+        Example of usage:
+        ```
+        fb.update({'resourceType': 'Patient', 'id': 'ID', 'name': []})
+        ```
+        """
         resource_type, _ = get_ref(resource)
 
         return self._execute_fn('update', [Json(resource)], txid)
 
     def delete(self, *args, txid=None):
+        """
+        Deletes resource.
+        If `txid` is not specified, new logical transaction will be created
+
+        Example of usage:
+        ```
+        fb.delete('Patient', 'ID')
+        ```
+        or
+        ```
+        fb.delete({'resourceType': 'Patient', 'id': 'ID'})
+        ```
+        """
         resource_type, resource_id = get_ref(*args)
 
         return self._execute_fn('delete', [resource_type, resource_id], txid)
 
     def read(self, *args):
+        """
+        Returns resource or None
+
+        Example of usage:
+        ```
+        fb.read('Patient', 'ID')
+        ```
+        or
+        ```
+        fb.read({'resourceType': 'Patient', 'id': 'ID'})
+        ```
+        """
         resource_type, resource_id = get_ref(*args)
 
         return self._execute_fn('read', [resource_type, resource_id])
 
     def list(self, sql, *args):
+        """
+        Returns iterator of resources`.
+        Note: sql should return all fields from resource.
+
+        Example of usage:
+        ```
+        patients = list(fb.list('SELECT p.* FROM patient p LIMIT 10'))
+        ```
+        """
         with self.execute(
                 'SELECT _fhirbase_to_resource(_result.*) '
                 'FROM ({0}) _result'.format(sql),
@@ -140,5 +225,9 @@ class FHIRBase(object):
             for entry in cursor:
                 yield entry[0]
 
+    @classmethod
+    def row_to_resource(cls, row):
+        return row_to_resource(row)
 
-__all__ = ['FHIRBase']
+
+__all__ = ['FHIRBase', 'row_to_resource']
