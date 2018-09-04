@@ -6,7 +6,7 @@ import pytest
 import fhirbase
 
 
-@pytest.fixture
+@pytest.fixture(scope='session')
 def db():
     pguser = os.getenv('PGUSER', 'postgres')
     pgpassword = os.getenv('PGPASSWORD', 'postgres')
@@ -28,17 +28,14 @@ def test_list_success(db):
     fb.create({'resourceType': 'Patient'})
     fb.create({'resourceType': 'Patient'})
     fetched_count = len(list(fb.list('SELECT * from patient')))
-    if fetched_count != 2:
-        pytest.fail(
-            'List should return 2 entries, '
-            'but {0} received'.format(fetched_count))
+
+    assert fetched_count == 2
 
 
 def test_create_success(db):
     fb = fhirbase.FHIRBase(db)
     patient = fb.create({'resourceType': 'Patient'})
-    if patient.get('id', None) is None:
-        pytest.fail('Just created patient should have id')
+    assert patient.get('id', None) is not None
 
 
 def test_create_in_transaction_success(db):
@@ -47,8 +44,7 @@ def test_create_in_transaction_success(db):
 
     patient = fb.create({'resourceType': 'Patient'}, txid=txid)
 
-    if int(patient['meta']['versionId']) != txid:
-        pytest.fail('Creating does not apply specified txid')
+    assert int(patient['meta']['versionId']) == txid
 
 
 def test_create_failed(db):
@@ -64,8 +60,7 @@ def test_update_success(db):
     patient['name'] = [{'text': 'John'}]
     updated_patient = fb.update(patient)
 
-    if patient['id'] != updated_patient['id']:
-        pytest.fail('Patient after updating must have the same id')
+    assert patient['id'] == updated_patient['id']
 
 
 def test_update_in_transaction_success(db):
@@ -76,8 +71,7 @@ def test_update_in_transaction_success(db):
     txid = fb.start_transaction({'info': 'Update'})
     updated_patient = fb.update(patient, txid=txid)
 
-    if int(updated_patient['meta']['versionId']) != txid:
-        pytest.fail('Updating does not apply specified txid')
+    assert int(updated_patient['meta']['versionId']) == txid
 
 
 def test_update_failed(db):
@@ -97,8 +91,7 @@ def test_read_success(db):
     patient = fb.create({'resourceType': 'Patient'})
 
     fetched_patient = fb.read(patient)
-    if patient != fetched_patient:
-        pytest.fail('Fetched patient must be equal a created patient')
+    assert patient == fetched_patient
 
 
 def test_read_by_explicit_ref_success(db):
@@ -106,8 +99,7 @@ def test_read_by_explicit_ref_success(db):
     patient = fb.create({'resourceType': 'Patient'})
 
     fetched_patient = fb.read(patient['resourceType'], patient['id'])
-    if patient != fetched_patient:
-        pytest.fail('Fetched patient must be equal a created patient')
+    assert patient == fetched_patient
 
 
 def test_read_failed(db):
@@ -131,8 +123,7 @@ def test_delete_success(db):
     fb.delete(patient)
 
     fetched_patient = fb.read(patient)
-    if fetched_patient is not None:
-        pytest.fail('Deleting must remove patient from db')
+    assert fetched_patient is  None
 
 
 def test_delete_by_explicit_ref_success(db):
@@ -141,8 +132,7 @@ def test_delete_by_explicit_ref_success(db):
     fb.delete(patient['resourceType'], patient['id'])
 
     fetched_patient = fb.read(patient)
-    if fetched_patient is not None:
-        pytest.fail('Deleting must remove patient from db')
+    assert fetched_patient is None
 
 
 def test_delete_in_transaction_success(db):
