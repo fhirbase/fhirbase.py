@@ -1,13 +1,6 @@
-FROM postgres:10.4
-RUN apt-get update
-RUN apt-get install wget -y
+FROM debian:stretch-slim
+RUN apt-get update && apt-get install -y wget
 
 # Install fhirbase
 RUN wget https://github.com/fhirbase/fhirbase-core/releases/download/nightly-build/fhirbase-linix-amd64 -O /usr/local/bin/fhirbase
 RUN chmod +x /usr/local/bin/fhirbase
-
-ENV PGUSER postgres
-ENV PGPASSWORD postgres
-ENV PGPORT 5432
-ENV PGHOST db
-ENV PGDATABASE postgres
