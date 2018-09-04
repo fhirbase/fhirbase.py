@@ -1,12 +1,7 @@
 version: '3'
 
 services:
-  fhirbase:
+  fhirbasepy:
     build: .
     volumes:
-      - .:/app/user
-
-  tests:
-    build: .
-    volumes:
-      - .:/app/user
+    - .:/app/user

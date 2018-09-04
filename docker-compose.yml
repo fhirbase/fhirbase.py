@@ -5,11 +5,28 @@ networks:
 
 services:
   db:
+    image: aidbox/aidboxdb:0.0.1-alpha3
+    ports:
+    - 54320:5432
+    networks:
+    - fhirbase
+    environment:
+      POSTGRES_USER:     postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB:       fhirbase
+
+  fhirbase:
     build: ./fhirbase-image
     networks:
     - fhirbase
+    environment:
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGPORT: 5432
+      PGHOST: db
+      PGDATABASE: fhirbase
 
-  fhirbase:
+  fhirbasepy:
     build: .
     depends_on:
     - db
@@ -20,4 +37,4 @@ services:
       PGPASSWORD: postgres
       PGPORT: 5432
       PGHOST: db
-      PGDATABASE: postgres
+      PGDATABASE: fhirbase

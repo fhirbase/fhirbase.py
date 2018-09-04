@@ -5,6 +5,10 @@
 FHIRBase connector for python.
 This package provides CRUD on resourses in fhirbase.
 
+# Install
+```
+pip install fhirbase
+```
 
 # Example
 To run example, just do:
@@ -12,6 +16,10 @@ To run example, just do:
 ```
 docker-compose build
 docker-compose up -d
-docker-compose run --rm db fhirbase -d postgres init 3.0.1
-docker-compose run --rm fhirbase python examples/example.py
+```
+Wait until db starting process will be completed, and run:
+
+```
+docker-compose run --rm fhirbase fhirbase init 3.0.1
+docker-compose run --rm fhirbasepy python examples/example.py
 ```

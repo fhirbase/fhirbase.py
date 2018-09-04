@@ -19,9 +19,11 @@ services:
     - fhirbase
     depends_on:
     - db
+    volumes:
+    - .:/app/user
     environment:
       PGUSER: postgres
       PGPASSWORD: postgres
       PGPORT: 5432
       PGHOST: db
-      PGDATABASE: postgres
+      PGDATABASE: fhirbase

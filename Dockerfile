@@ -5,6 +5,7 @@ WORKDIR /app/user
 
 ADD requirements.txt /app/user
 RUN pip install --src /src -r requirements.txt
+RUN pip install --src /src ipython
 ADD . /app/user
 
 # Install package
