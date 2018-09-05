@@ -91,7 +91,7 @@ class FHIRBase(object):
     def __init__(self, connection):
         self.connection = connection
 
-    def _execute_fn(self, fn_name, params, txid=None):
+    def _execute_fn(self, fn_name, params, txid=None, commit=True):
         params = params.copy()
 
         if txid:
@@ -102,7 +102,7 @@ class FHIRBase(object):
             params=','.join(['%s'] * len(params))
         )
 
-        with self.execute(sql, params, commit=True) as cursor:
+        with self.execute(sql, params, commit=commit) as cursor:
             return cursor.fetchone()[0]
 
     @contextmanager
@@ -130,7 +130,7 @@ class FHIRBase(object):
         with self.execute(sql, params, commit):
             pass
 
-    def start_transaction(self, info=None):
+    def start_transaction(self, info=None, *, commit=True):
         """
         Creates new logical transaction and returns id
         """
@@ -138,11 +138,12 @@ class FHIRBase(object):
 
         with self.execute(
                 'INSERT INTO transaction (resource) VALUES (%s) RETURNING id',
-                [Json(info)]
+                [Json(info)],
+                commit=commit
         ) as cursor:
             return cursor.fetchone()[0]
 
-    def create(self, resource, *, txid=None):
+    def create(self, resource, *, txid=None, commit=True):
         """
         Creates resource and returns resource.
         If `txid` is not specified, new logical transaction will be created
@@ -156,9 +157,9 @@ class FHIRBase(object):
         if not resource_type:
             raise TypeError('`resource` must contain `resourceType` key')
 
-        return self._execute_fn('create', [Json(resource)], txid)
+        return self._execute_fn('create', [Json(resource)], txid, commit)
 
-    def update(self, resource, *, txid=None):
+    def update(self, resource, *, txid=None, commit=True):
         """
         Updates resource and returns resource.
         If `txid` is not specified, new logical transaction will be created
@@ -170,9 +171,9 @@ class FHIRBase(object):
         """
         resource_type, _ = get_ref(resource)
 
-        return self._execute_fn('update', [Json(resource)], txid)
+        return self._execute_fn('update', [Json(resource)], txid, commit)
 
-    def delete(self, *args, txid=None):
+    def delete(self, *args, txid=None, commit=True):
         """
         Deletes resource.
         If `txid` is not specified, new logical transaction will be created
@@ -188,7 +189,8 @@ class FHIRBase(object):
         """
         resource_type, resource_id = get_ref(*args)
 
-        return self._execute_fn('delete', [resource_type, resource_id], txid)
+        return self._execute_fn(
+            'delete', [resource_type, resource_id], txid, commit)
 
     def read(self, *args):
         """

@@ -33,16 +33,19 @@ if __name__ == '__main__':
         print()
         print('List of patients')
 
+        for p in fb.list('SELECT * FROM patient'):
+            print(p)
 
-        name_fields = ['given' 'family' 'suffix' 'text']
+        print()
+        print('Custom sql execution')
 
         query = '''
-        SELECT p.* from patient p 
-        WHERE knife_extract(p.resource#>>name, [])
+        SELECT p.resource#>>'{name}' textname 
+        FROM patient p
         '''
-
-        for p in fb.list(query):
-            print(p)
+        with fb.execute(query) as cursor:
+            for item in cursor:
+                print(item['textname'])
 
         print()
         print('Read patient')
