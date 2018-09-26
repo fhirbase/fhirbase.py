@@ -3,8 +3,8 @@
 
 # fhirbase.py
 FHIRBase connector for python.
-This package provides wrapper over psycopg2 connection which
-provides CRUD for resources in fhirbase.
+This package provides a wrapper over psycopg2 connection which
+provides CRUD operations for resources in fhirbase.
 
 # Install
 ```
@@ -18,7 +18,7 @@ import fhirbase
 import psycopg2
 ```
 
-Create a connection using `psycopg2.connect`;
+Create a connection using `psycopg2.connect`:
 
 ```
 connection = psycopg2.connect(
@@ -37,8 +37,8 @@ Now you can use the following methods of `FHIRBase` instance:
 * `.row_to_resource(row)`
 
 CRUD methods work with [FHIR resources](https://www.hl7.org/fhir/resourcelist.html).
-Resource represented as a dict with specified `resourceType` key as required key.
-The following methods works with resource and returns resources.
+A resource represented as a dict with a specified `resourceType` key as a required key.
+The following methods works with a resource and returns resources.
 
 * `.create(resource, txid=None, commit=True)`
 * `.update(resource, txid=None,  commit=True)`
@@ -53,7 +53,7 @@ Executes sql with params.
 
 Syntax: `.execute(sql, params=None, commit=False)`
 
-Returns: context manager with cursor as context
+Returns: context manager with a cursor as context
 
 Example:
 ```
@@ -73,8 +73,8 @@ Example:
 fb.execute_without_result('INSERT INTO transaction (resource) VALUES (%s)', ['{}'])
 ```
 
-### `.row_to_resource`
-Transforms row raw from DB to resource.
+### .row_to_resource
+Transforms a raw row from DB to a resource.
 
 Syntax: `.row_to_resource(row)`
 
@@ -92,7 +92,7 @@ fb.row_to_resource({
 }))
 ```
 
-will return resource representation:
+will return a resource representation:
 
 ```
 {
@@ -103,9 +103,9 @@ will return resource representation:
 }
 ```
 
-### `.create`
-Creates resource.
-If txid is not specified, new unique logical transaction id will be generated.
+### .create
+Creates a resource.
+If `txid` is not specified, a new unique logical transaction id will be generated.
 
 Syntax: `.create(resource, txid=None, commit=True)`
 
@@ -128,9 +128,9 @@ returns
 }
 ```
 
-### `.update`
-Updates resource.
-If txid is not specified, new unique logical transaction id will be generated.
+### .update
+Updates a resource.
+If txid is not specified, a new unique logical transaction id will be generated.
 
 Key `id` is required in `resource` argument.
 
@@ -159,10 +159,10 @@ returns
 ```
 
 
-### `.delete`
-Deletes resource.
-If txid is not specified, new unique logical transaction id will be generated.
-Keys `id` and `resourceType` are required in `resource` argument in first variant of usage.
+### .delete
+Deletes a resource.
+If txid is not specified, a new unique logical transaction id will be generated.
+Keys `id` and `resourceType` are required in `resource` argument in the first variant of an usage.
 
 Syntax: `.delete(resource, txid=None, commit=True)` or `.delete(resource_type, id, txid=None, commit=True)`
 
@@ -183,8 +183,8 @@ fb.delete(resource_type='Patient', id='id')
 ```
 
 
-### `.read`
-Reads resource.
+### .read
+Reads a resource.
 Keys `id` and `resourceType` are required in `resource` argument in first variant of usage.
 
 Syntax: `.read(resource)` or `.read(resource_type, id)`
@@ -205,10 +205,10 @@ or
 fb.read(resource_type='Patient', id='id')
 ```
 
-### `.list`
+### .list
 
-Executes SQL and returns iterator of resources.
-Note: sql query must return all fields of resource table.
+Executes SQL and returns an iterator of resources.
+Note: sql query must return all fields of a resource table.
 
 Syntax: `.list(sql, params)`
 
