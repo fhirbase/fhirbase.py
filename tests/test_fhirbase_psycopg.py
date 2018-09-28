@@ -3,7 +3,7 @@ import os
 import psycopg2
 import pytest
 
-import fhirbase
+import fhirbase.psycopg2 as fhirbase
 
 
 @pytest.fixture(scope='session')
