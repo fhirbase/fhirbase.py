@@ -3,9 +3,6 @@ from contextlib import contextmanager
 from psycopg2 import DatabaseError
 from psycopg2.extras import Json, DictCursor
 
-__version__ = '0.0.1'
-
-
 def get_ref(*args):
     """
     Extracts resource type and id from args

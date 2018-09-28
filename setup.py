@@ -35,7 +35,7 @@ setup(
     author_email='fhirbase.py@health-samurai.io',
     packages=['fhirbase'],
     include_package_data=True,
-    install_requires=['psycopg2'],
+    install_requires=['psycopg2', 'aiopg'], #TODO make database driver optional dependency
     zip_safe=False,
     classifiers=[
         'Development Status :: 4 - Beta',
