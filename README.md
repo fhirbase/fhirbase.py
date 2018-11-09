@@ -28,7 +28,7 @@ connection = psycopg2.connect(
 
 Create an instance of `FHIRBase`:
 ```
-fb = fhribase.FHIRBase(connection)
+fb = fhirbase.FHIRBase(connection)
 ```
 
 Now you can use the following methods of `FHIRBase` instance:
