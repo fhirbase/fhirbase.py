@@ -73,7 +73,7 @@ def row_to_resource(row):
     meta = row['resource'].get('meta', {})
     meta.update({
         'lastUpdated': row['ts'],
-        'versionId': row['txid'],
+        'versionId': str(row['txid']),
     })
     resource.update({
         'resourceType': row['resource_type'],
